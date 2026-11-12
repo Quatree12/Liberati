@@ -182,11 +182,9 @@ function dessinerTable() {
   donnees.boites.forEach((b) => {
     const el = document.createElement('button');
     el.className = 'boite';
-    el.innerHTML =
-      '<span class="boite-nom"></span>' +
-      '<span class="boite-matiere"></span>';
+    el.setAttribute('aria-label', 'Ouvrir ' + b.nom);
+    el.innerHTML = '<span class="boite-nom"></span>';
     el.querySelector('.boite-nom').textContent = b.nom;
-    el.querySelector('.boite-matiere').textContent = b.matiere;
     el.addEventListener('click', () => ouvrirBoite(b));
     zone.appendChild(el);
   });
@@ -204,8 +202,40 @@ function ouvrirBoite(b) {
 $('#retour').addEventListener('click', () => montrer('table'));
 
 /* ---------- Écran 3 : la boîte, fermée ----------
-   Rien ne s'étale. On voit la boîte, et des pastilles qui attendent
-   d'être touchées. Un souvenir ne s'ouvre que si la main le demande. */
+   Rien ne s'étale. Des ronds flottent sur la page, chacun avec la
+   couleur de sa matière. On en touche un, et ce souvenir-là s'ouvre. */
+
+/* Une place pour chaque rond : répartie, jamais alignée en grille.
+   On place en spirale autour du centre, avec un léger désordre. */
+function places(nombre) {
+  const sortie = [];
+  const centre = { x: 50, y: 46 };
+  for (let i = 0; i < nombre; i += 1) {
+    if (i === 0) {
+      sortie.push({ x: centre.x, y: centre.y });
+      continue;
+    }
+    // Spirale d'or : deux tours suffisent pour une vingtaine de ronds.
+    const angle = i * 2.399963;
+    const rayon = 9 + (i / Math.max(nombre - 1, 1)) * 30;
+    // Un petit flottement, pour que rien ne soit parfaitement en ligne.
+    const flou = ((i * 37) % 11) - 5;
+    sortie.push({
+      x: centre.x + Math.cos(angle) * rayon,
+      y: centre.y + Math.sin(angle) * rayon * 0.78 + flou * 0.4
+    });
+  }
+  return sortie;
+}
+
+/* Chaque souvenir a sa teinte, tirée de son identifiant : stable
+   d'une visite à l'autre, mais différente d'un souvenir à l'autre. */
+function teinte(souvenir) {
+  let somme = 0;
+  const texte = String(souvenir.id || '');
+  for (let i = 0; i < texte.length; i += 1) somme += texte.charCodeAt(i);
+  return somme % 360;
+}
 
 function dessinerSouvenirs(b) {
   const zone = $('#souvenirs');
@@ -214,36 +244,27 @@ function dessinerSouvenirs(b) {
   if (!b.souvenirs.length) {
     const vide = document.createElement('p');
     vide.className = 'vide';
-    vide.textContent = 'Rien encore. Touche « empreinte » en bas pour déposer une photo, une voix, ou des mots.';
+    vide.textContent = 'Rien encore.';
     zone.appendChild(vide);
     return;
   }
 
-  b.souvenirs.forEach((s) => {
-    zone.appendChild(pastille(s));
+  const spots = places(b.souvenirs.length);
+
+  b.souvenirs.forEach((s, i) => {
+    const el = document.createElement('button');
+    el.className = 'rond r-' + s.type;
+    el.type = 'button';
+    el.setAttribute('aria-label', 'Ouvrir ce souvenir');
+    el.style.left = spots[i].x + '%';
+    el.style.top = spots[i].y + '%';
+    el.style.setProperty('--teinte', teinte(s));
+    // Chaque rond flotte à son propre rythme.
+    el.style.animationDelay = (-(i * 1.7)) + 's';
+    el.style.animationDuration = (9 + (i % 5) * 1.3) + 's';
+    el.addEventListener('click', () => ouvrirSouvenir(s));
+    zone.appendChild(el);
   });
-}
-
-/* La pastille : un objet fermé, avec sa matière. On la touche, elle s'ouvre. */
-function pastille(s) {
-  const el = document.createElement('button');
-  el.className = 'pastille p-' + s.type;
-  el.type = 'button';
-  el.setAttribute('aria-label', 'Ouvrir ce souvenir');
-
-  const marque = document.createElement('span');
-  marque.className = 'pastille-marque';
-  el.appendChild(marque);
-
-  const mot = document.createElement('span');
-  mot.className = 'pastille-mot';
-  mot.textContent = s.type === 'photo' ? 'une photo'
-    : s.type === 'vocal' ? 'une voix'
-    : 'des mots';
-  el.appendChild(mot);
-
-  el.addEventListener('click', () => ouvrirSouvenir(s));
-  return el;
 }
 
 /* Le souvenir ouvert : plein écran, un seul à la fois. */
@@ -259,8 +280,16 @@ function ouvrirSouvenir(s) {
   if (s.type === 'vocal')  corps.appendChild(carteVocal(s));
   if (s.type === 'phrase') corps.appendChild(cartePhrase(s));
 
-  $('#ouvert-date').textContent = s.date ? 'ce jour-là, le ' + s.date : '';
+  $('#ouvert-date').textContent = s.date ? 'ce jour-là, le ' + dateLisible(s.date) : '';
   vue.hidden = false;
+}
+
+/* 2024-12-25 devient « 25 décembre 2024 ». */
+function dateLisible(iso) {
+  const mois = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  const [a, m, j] = iso.split('-');
+  return Number(j) + ' ' + mois[Number(m) - 1] + ' ' + a;
 }
 
 function fermerSouvenir() {
@@ -432,7 +461,8 @@ function carteVocal(s) {
   return el;
 }
 
-/* Geste 3 — la révélation : les mots arrivent au rythme de la main. */
+/* Geste 3 — la révélation : les mots arrivent au rythme de la main.
+   Le cadre épouse le texte : pas de vide, pas de rectangle trop grand. */
 function cartePhrase(s) {
   const el = document.createElement('div');
   el.className = 'phrase';

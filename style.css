@@ -23,6 +23,15 @@ html, body {
   overflow: hidden;
 }
 
+/* Rien dans cette app ne doit pouvoir être sélectionné par accident :
+   c'est un objet qu'on touche, pas un texte qu'on surligne. */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.champ textarea, input, .phrase { -webkit-user-select: text; user-select: text; }
+
 .ecran {
   position: fixed;
   inset: 0;
@@ -50,7 +59,7 @@ html, body {
 }
 .discret:hover, .discret:focus-visible { color: var(--encre); }
 
-.haut-gauche { position: absolute; top: 12px; left: 8px; }
+.haut-gauche { position: absolute; top: 12px; left: 8px; z-index: 2; }
 
 /* ---------- Le seuil ---------- */
 
@@ -70,85 +79,130 @@ html, body {
   to   { opacity: 1; transform: none; }
 }
 
-/* ---------- La table ---------- */
+/* ---------- La table : une seule boîte, à la taille du mot ---------- */
 
 .boites {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: min(680px, 100%);
 }
 
+/* La boîte n'est plus un grand carré vide : c'est un objet fermé,
+   à la taille de ce qu'il contient. */
 .boite {
-  aspect-ratio: 4 / 5;
-  border-radius: 4px;
-  background: var(--fond-doux);
-  border: 1px solid rgba(237, 228, 216, .09);
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  padding: 18px;
+  align-items: center;
+  gap: 8px;
+  padding: 46px 54px;
+  border-radius: 10px;
+  background: var(--fond-doux);
+  border: 1px solid rgba(237, 228, 216, .1);
   cursor: pointer;
-  /* le relief d'un objet posé, pas d'une carte dans une liste */
-  box-shadow: 0 10px 26px rgba(0, 0, 0, .35);
+  color: var(--encre);
+  font: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: center;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .38);
   transition: transform 800ms var(--souffle), box-shadow 800ms var(--souffle);
 }
 .boite:hover, .boite:focus-visible {
   transform: translateY(-4px);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, .45);
+  box-shadow: 0 20px 42px rgba(0, 0, 0, .48);
 }
-/* Le nom et la matière portent leur couleur explicitement : sur iOS,
-   un <button> garde sinon son style système (bleu souligné), et
-   `inherit` ne suffit pas à l'écraser. */
 .boite-nom {
-  font-size: 19px;
+  font-size: 22px;
   color: var(--encre);
   text-decoration: none;
-  -webkit-text-decoration: none;
-}
-.boite-matiere {
-  font-size: 13px;
-  margin-top: 6px;
-  color: var(--encre-pale);
-  text-decoration: none;
-  -webkit-text-decoration: none;
 }
 
-/* Le bouton lui-même : on neutralise tout habillage système. */
-.boite {
-  color: var(--encre);
-  font: inherit;
-  text-align: left;
+/* ---------- La boîte ouverte : des ronds qui flottent ---------- */
+
+#boite { justify-content: flex-start; padding-top: 92px; }
+#boite .entete { margin-bottom: 0; }
+
+/* La zone flottante : toute la page, hors du titre et du bouton. */
+#souvenirs {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-height: none;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+}
+#souvenirs > * { pointer-events: auto; }
+
+/* Le rond : sans mot, sans marque — juste une matière et un mouvement. */
+.rond {
+  position: absolute;
+  width: 78px;
+  height: 78px;
+  margin: -39px 0 0 -39px;
+  border-radius: 50%;
+  border: 1px solid rgba(237, 228, 216, .07);
+  background: radial-gradient(circle at 32% 28%,
+    hsl(var(--teinte, 30) 34% 34%), hsl(var(--teinte, 30) 26% 20%));
+  cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
+  padding: 0;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .34);
+  animation: flotter 10s ease-in-out infinite;
+  transition: transform 700ms var(--souffle);
+}
+.rond:hover, .rond:focus-visible { transform: scale(1.12); }
+
+/* Les mots flottent un peu plus lentement que les photos : chaque
+   matière a son poids. */
+.r-phrase { width: 92px; height: 92px; margin: -46px 0 0 -46px; }
+.r-vocal  { width: 68px; height: 68px; margin: -34px 0 0 -34px; }
+.r-photo  { width: 84px; height: 84px; margin: -42px 0 0 -42px; }
+
+@keyframes flotter {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(4px, -7px) rotate(1.5deg); }
+  50%  { transform: translate(-3px, -11px) rotate(-1deg); }
+  75%  { transform: translate(-6px, -4px) rotate(-2deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
 }
 
-/* ---------- Les souvenirs ---------- */
+/* Le titre et le bouton restent au-dessus des ronds. */
+#boite .entete, .ajouter, #retour, .roue { position: relative; z-index: 3; }
+.ajouter, .roue { position: fixed; }
 
-.entete { margin-bottom: 26px; }
-.entete h1 { font-size: 22px; font-weight: 400; margin: 0; }
-
-.souvenirs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  justify-content: center;
-  align-content: center;
-  width: min(680px, 100%);
-  max-height: 70vh;
-  overflow-y: auto;
+.vide {
+  color: var(--encre-pale);
+  font-size: 15px;
+  text-align: center;
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
 }
 
-/* Geste 1 — la caresse */
+/* ---------- Les souvenirs ouverts ---------- */
+
+/* La photo garde son rapport : jamais coupée, jamais déformée. */
 .photo {
-  width: 190px;
-  aspect-ratio: 1;
-  border-radius: 3px;
-  background: linear-gradient(150deg, #4a3d34, #2c2420);
-  position: relative;
+  max-width: min(86vw, 560px);
+  max-height: 68vh;
+  border-radius: 4px;
   overflow: hidden;
-  cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, .4);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, .45);
+  position: relative;
+  line-height: 0;
+}
+.photo img {
+  display: block;
+  max-width: min(86vw, 560px);
+  max-height: 68vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 .photo::after {
   content: '';
@@ -163,15 +217,13 @@ html, body {
 .photo.eveillee { animation: respirer 4200ms ease-in-out infinite; }
 @keyframes respirer {
   0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.018); }
+  50%      { transform: scale(1.012); }
 }
 
 /* Geste 2 — la pression */
 .vocal {
   width: min(280px, 80vw);
   cursor: pointer;
-  /* Le doigt ne doit jamais être « sur du texte » : ni sélection,
-     ni menu contextuel, ni curseur de saisie — c'est une bande qu'on presse. */
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
@@ -179,7 +231,6 @@ html, body {
   touch-action: none;
   padding: 40px 0;
 }
-/* La piste : la bande qu'on presse du doigt, comme un vieux répondeur. */
 .piste {
   display: block;
   height: 34px;
@@ -204,22 +255,25 @@ html, body {
   transition: transform 180ms linear;
 }
 
-/* Geste 3 — la révélation */
+/* Geste 3 — la révélation. Le cadre épouse le texte : une boîte
+   qui contient, pas un rectangle qui bâille. */
 .phrase {
-  width: min(320px, 82vw);
-  padding: 30px 26px;
-  border-radius: 3px;
+  display: inline-block;
+  max-width: min(76vw, 460px);
+  padding: 26px 28px;
+  border-radius: 4px;
   background: var(--fond-doux);
   border: 1px solid rgba(237, 228, 216, .12);
   font-size: 18px;
-  line-height: 1.8;
+  line-height: 1.75;
   color: var(--encre-pale);
   cursor: pointer;
+  text-align: left;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
   touch-action: none;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .35);
 }
 .mot {
   opacity: .12;
@@ -228,12 +282,66 @@ html, body {
 }
 .mot.lu { opacity: 1; filter: none; color: var(--encre); }
 
+/* ---------- Le souvenir ouvert ---------- */
+
+.ouvert {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  background: var(--fond);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: var(--marge);
+  animation: ouvrir 620ms var(--souffle) both;
+}
+.ouvert[hidden] { display: none; }
+@keyframes ouvrir {
+  from { opacity: 0; transform: scale(.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+.ouvert-date {
+  color: var(--encre-pale);
+  font-size: 13px;
+  margin: 0;
+  min-height: 18px;
+}
+.ouvert-corps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.retirer {
+  background: none;
+  border: 1px solid rgba(237, 228, 216, .14);
+  color: var(--encre-pale);
+  font: inherit;
+  font-size: 13px;
+  letter-spacing: .06em;
+  padding: 12px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: color 600ms var(--souffle), border-color 600ms var(--souffle);
+}
+.retirer:hover, .retirer:focus-visible {
+  color: #d98a7a;
+  border-color: rgba(217, 138, 122, .45);
+}
+.retirer:disabled { opacity: .4; }
+
 /* ---------- Le reçu ---------- */
 
 .recu {
   position: fixed;
   left: 50%;
-  bottom: 40px;
+  bottom: 100px;
   transform: translate(-50%, 16px);
   display: flex;
   align-items: center;
@@ -244,6 +352,7 @@ html, body {
   border: 1px solid rgba(237, 228, 216, .12);
   opacity: 0;
   pointer-events: none;
+  z-index: 30;
   transition: opacity 500ms var(--souffle), transform 500ms var(--souffle);
 }
 .recu.visible { opacity: 1; transform: translate(-50%, 0); }
@@ -253,10 +362,9 @@ html, body {
 }
 .recu-mot { font-size: 14px; }
 
-/* ---------- Le geste d'empreinte : ajouter un souvenir ---------- */
+/* ---------- Le geste d'empreinte ---------- */
 
 .ajouter {
-  position: fixed;
   right: 20px;
   bottom: 24px;
   background: none;
@@ -275,7 +383,8 @@ html, body {
 }
 .ajouter:hover, .ajouter:focus-visible { background: rgba(224, 168, 120, .12); }
 
-/* Le tiroir : une question à la fois, jamais un formulaire */
+/* ---------- Le tiroir ---------- */
+
 .tiroir {
   position: fixed;
   inset: 0;
@@ -283,12 +392,14 @@ html, body {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  z-index: 20;
+  z-index: 40;
 }
 .tiroir[hidden] { display: none; }
 
 .tiroir-boite {
   width: min(520px, 100%);
+  max-height: 92vh;
+  overflow-y: auto;
   background: var(--fond-doux);
   border-radius: 14px 14px 0 0;
   border-top: 1px solid rgba(237, 228, 216, .1);
@@ -335,6 +446,7 @@ html, body {
   padding: 14px;
   color: var(--encre);
   resize: vertical;
+  min-height: 90px;
 }
 .aide { color: var(--encre-pale); font-size: 13px; margin: 10px 0 16px; }
 
@@ -373,26 +485,12 @@ html, body {
 
 .note { color: var(--encre-pale); font-size: 13px; margin: 16px 0 0; min-height: 18px; }
 
-/* La photo déposée, quand elle a une source */
-.photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-/* Quand il n'y a encore rien dans la boîte */
-.vide {
-  color: var(--encre-pale);
-  font-size: 15px;
-  line-height: 1.7;
-  text-align: center;
-  max-width: 300px;
-  margin: 0;
-}
-
 /* ---------- La roue des réglages ---------- */
 
 .roue {
-  position: fixed;
   top: 14px;
   right: 12px;
-  z-index: 15;
+  z-index: 35;
   background: none;
   border: 0;
   color: var(--encre-pale);
@@ -417,8 +515,6 @@ html, body {
 
 .large { width: 100%; text-align: center; }
 
-/* Le bouton « importer » : un label qui a l'air d'un bouton, pour
-   pouvoir ouvrir le choix de fichier sans détour. */
 .faux-bouton {
   display: block;
   border: 1px solid rgba(224, 168, 120, .45);
@@ -434,134 +530,6 @@ html, body {
 
 .aide.doux { opacity: .75; margin-top: 18px; }
 
-/* ---------- La boîte fermée : des pastilles ---------- */
-
-.geste-aide {
-  margin-top: 22px;
-  text-align: center;
-  opacity: .5;
-}
-
-.souvenirs {
-  gap: 14px;
-}
-
-/* Une pastille : un objet fermé. Sa matière se devine, rien de plus. */
-.pastille {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  width: 104px;
-  height: 104px;
-  border-radius: 50%;
-  background: var(--fond-doux);
-  border: 1px solid rgba(237, 228, 216, .1);
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, .32);
-  transition: transform 700ms var(--souffle), box-shadow 700ms var(--souffle);
-}
-.pastille:hover, .pastille:focus-visible {
-  transform: translateY(-3px);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, .42);
-}
-.pastille-marque {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--chaud);
-}
-/* Chaque matière a sa marque. */
-.p-photo .pastille-marque {
-  width: 30px; height: 30px; border-radius: 3px;
-  background: linear-gradient(150deg, #6a574a, #38302a);
-}
-.p-vocal .pastille-marque {
-  width: 34px; height: 3px; border-radius: 2px;
-}
-.p-phrase .pastille-marque {
-  width: 26px; height: 3px; border-radius: 2px;
-  box-shadow: 0 7px 0 rgba(224, 168, 120, .55),
-              0 -7px 0 rgba(224, 168, 120, .55);
-}
-.pastille-mot {
-  color: var(--encre-pale);
-  font-size: 12px;
-  letter-spacing: .04em;
-}
-
-/* ---------- Le souvenir ouvert ---------- */
-
-.ouvert {
-  position: fixed;
-  inset: 0;
-  z-index: 25;
-  background: var(--fond);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 26px;
-  padding: var(--marge);
-  animation: ouvrir 620ms var(--souffle) both;
-}
-.ouvert[hidden] { display: none; }
-@keyframes ouvrir {
-  from { opacity: 0; transform: scale(.985); }
-  to   { opacity: 1; transform: none; }
-}
-
-.ouvert-date {
-  color: var(--encre-pale);
-  font-size: 13px;
-  margin: 0;
-  min-height: 18px;
-}
-.ouvert-corps {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Le retrait : un vrai bouton, discret, en bas. */
-.retirer {
-  background: none;
-  border: 1px solid rgba(237, 228, 216, .14);
-  color: var(--encre-pale);
-  font: inherit;
-  font-size: 13px;
-  letter-spacing: .06em;
-  padding: 12px 22px;
-  border-radius: 999px;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  transition: color 600ms var(--souffle), border-color 600ms var(--souffle);
-}
-.retirer:hover, .retirer:focus-visible {
-  color: #d98a7a;
-  border-color: rgba(217, 138, 122, .45);
-}
-.retirer:disabled { opacity: .4; }
-
-/* Rien dans cette app ne doit pouvoir être sélectionné par accident :
-   c'est un objet qu'on touche, pas un texte qu'on surligne. */
-body {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-}
-.champ textarea, input, .phrase { -webkit-user-select: text; user-select: text; }
-
-/* Le bouton « choisir un fichier » a la même matière que les autres :
-   le bouton natif du navigateur, blanc et bleu, n'a rien à faire ici. */
 .tiroir input[type="file"] {
   position: absolute;
   width: 1px;
@@ -577,7 +545,6 @@ body {
 .faux-bouton + .aide { margin-top: 8px; margin-bottom: 18px; }
 .faux-bouton + .faux-bouton { margin-top: 12px; }
 
-/* L'écran des réglages respire un peu plus. */
 #reglages-ecran .entete { margin-bottom: 30px; }
 
 @media (prefers-reduced-motion: reduce) {

@@ -5,7 +5,7 @@
    Il ne touche JAMAIS aux souvenirs : ceux-ci vivent dans IndexedDB,
    séparément, et ne passent pas par ici. */
 
-const VERSION = 'liberati-v9';
+const VERSION = 'liberati-v10';
 const FICHIERS = [
   './',
   './index.html',
