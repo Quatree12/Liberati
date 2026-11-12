@@ -156,7 +156,12 @@ function versWav(memoire) {
 }
 
 const $ = (sel) => document.querySelector(sel);
-const ecrans = { seuil: $('#seuil'), table: $('#table'), boite: $('#boite') };
+const ecrans = {
+  seuil: $('#seuil'),
+  table: $('#table'),
+  boite: $('#boite'),
+  reglages: $('#reglages-ecran')
+};
 
 function montrer(nom) {
   Object.values(ecrans).forEach((e) => e.classList.remove('actif'));
@@ -220,17 +225,34 @@ function dessinerSouvenirs(b) {
 /* Un appui long sur une carte la retire — le seul geste de retrait. */
 function rendreRetirable(el, souvenir) {
   let minuteur = null;
-  el.addEventListener('pointerdown', () => {
+  let parti = false;
+
+  const commencer = () => {
+    parti = false;
     minuteur = setTimeout(async () => {
       minuteur = null;
+      parti = true;
+      // Un signe, pour savoir que le retrait est en train de se faire.
+      el.classList.add('retrait');
+      await effacer(souvenir.id);
       const b = donnees.boites[0];
       b.souvenirs = b.souvenirs.filter((s) => s.id !== souvenir.id);
-      await effacer(souvenir.id);
-      dessinerSouvenirs(b);
-    }, 1600);
-  });
-  const stopper = () => { if (minuteur) { clearTimeout(minuteur); minuteur = null; } };
-  window.addEventListener('pointerup', stopper);
+      b.matiere = b.souvenirs.length + ' souvenir'
+        + (b.souvenirs.length === 1 ? '' : 's');
+      setTimeout(() => dessinerSouvenirs(b), 420);
+    }, 1200);
+  };
+
+  const stopper = () => {
+    if (minuteur) { clearTimeout(minuteur); minuteur = null; }
+    if (!parti) el.classList.remove('retrait');
+  };
+
+  // On écoute sur l'élément lui-même : glisser le doigt ne doit pas
+  // interrompre le décompte du retrait.
+  el.addEventListener('pointerdown', commencer);
+  el.addEventListener('pointerup', stopper);
+  el.addEventListener('pointerleave', stopper);
   el.addEventListener('pointercancel', stopper);
 }
 
@@ -292,14 +314,6 @@ function carteVocal(s) {
   let enCours = false;
   let verrouille = false;
 
-  // La durée du fichier prime sur la durée inventée.
-  let dureeReelle = duree;
-  if (son) {
-    son.addEventListener('loadedmetadata', () => {
-      if (isFinite(son.duration)) dureeReelle = son.duration * 1000;
-    });
-  }
-
   function tic() {
     const ecoule = position + (performance.now() - debut);
     onde.style.transform = 'scaleX(' + Math.min(1, ecoule / dureeReelle) + ')';
@@ -312,7 +326,7 @@ function carteVocal(s) {
     debut = performance.now();
     tic();
     if (son) {
-      son.currentTime = Math.min(position / 1000, son.duration || 0);
+      son.currentTime = Math.min(position, (son.duration || duree / 1000));
       son.play().catch(() => {});
     }
   }
@@ -328,6 +342,14 @@ function carteVocal(s) {
       position = 0;
       onde.style.transform = 'scaleX(0)';
     }
+  }
+
+  // La durée du fichier prime sur la durée inventée.
+  let dureeReelle = duree;
+  if (son) {
+    son.addEventListener('loadedmetadata', () => {
+      if (isFinite(son.duration)) dureeReelle = son.duration * 1000;
+    });
   }
 
   // On écoute sur la fenêtre, pas seulement sur la capsule : un doigt qui
@@ -517,6 +539,104 @@ $('#garder').addEventListener('click', async () => {
     };
     note.textContent = messages[err.message] || 'Ça n’a pas marché. Réessaie.';
     $('#garder').disabled = false;
+  }
+});
+
+/* ---------- Les réglages : exporter, importer ---------- */
+
+$('#reglages').addEventListener('click', () => {
+  $('#etat-export').textContent = '';
+  $('#etat-import').textContent = '';
+  montrer('reglages');
+});
+
+$('#retour-reglages').addEventListener('click', () => montrer('table'));
+
+/* L'export : tout ce qui est dans l'appareil, dans un seul fichier.
+   On passe par un Blob — aucune donnée ne part sur le réseau. */
+$('#exporter').addEventListener('click', async () => {
+  const etat = $('#etat-export');
+  etat.textContent = 'Un instant…';
+
+  try {
+    const souvenirs = await lireTout();
+
+    if (!souvenirs.length) {
+      etat.textContent = 'Rien à exporter encore — la boîte est vide.';
+      return;
+    }
+
+    const paquet = {
+      application: 'liberati',
+      version: 1,
+      exporte: new Date().toISOString(),
+      boites: [{ id: 'ma-boite', nom: 'Ma boîte' }],
+      souvenirs
+    };
+
+    const contenu = JSON.stringify(paquet);
+    const blob = new Blob([contenu], { type: 'application/json' });
+    const lien = document.createElement('a');
+    lien.href = URL.createObjectURL(blob);
+    lien.download = 'liberati-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(lien);
+    lien.click();
+    document.body.removeChild(lien);
+    setTimeout(() => URL.revokeObjectURL(lien.href), 4000);
+
+    etat.textContent = souvenirs.length + (souvenirs.length === 1
+      ? ' souvenir exporté.'
+      : ' souvenirs exportés.');
+
+  } catch (e) {
+    etat.textContent = 'L’export n’a pas marché. Réessaie.';
+  }
+});
+
+/* L'import : on ajoute ce qui manque, on n'écrase jamais ce qui existe. */
+$('#fichier-import').addEventListener('change', async (e) => {
+  const etat = $('#etat-import');
+  const fichier = e.target.files[0];
+  if (!fichier) return;
+
+  etat.textContent = 'Un instant…';
+
+  try {
+    const lu = JSON.parse(await fichier.text());
+    const arrives = Array.isArray(lu) ? lu : (lu.souvenirs || []);
+
+    if (!arrives.length) {
+      etat.textContent = 'Ce fichier ne contient aucun souvenir.';
+      return;
+    }
+
+    let ajoutes = 0;
+    const dejaLa = new Set(donnees.boites[0].souvenirs.map((s) => s.id));
+
+    for (const s of arrives) {
+      if (!s || !s.type) continue;
+      const id = s.id || ('s-' + Date.now() + '-' + ajoutes);
+      if (dejaLa.has(id)) continue;   // jamais de doublon
+      s.id = id;
+      await ecrire(s);
+      donnees.boites[0].souvenirs.push(s);
+      dejaLa.add(id);
+      ajoutes += 1;
+    }
+
+    donnees.boites[0].matiere = donnees.boites[0].souvenirs.length + ' souvenir'
+      + (donnees.boites[0].souvenirs.length === 1 ? '' : 's');
+
+    etat.textContent = ajoutes
+      ? ajoutes + (ajoutes === 1 ? ' souvenir ajouté.' : ' souvenirs ajoutés.')
+      : 'Tout était déjà là.';
+
+    dessinerTable();
+
+  } catch (err) {
+    etat.textContent = 'Ce fichier n’a pas pu être lu.';
+  } finally {
+    e.target.value = '';
   }
 });
 
