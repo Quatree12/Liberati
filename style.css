@@ -264,6 +264,139 @@ html, body {
 }
 .recu-mot { font-size: 14px; }
 
+/* ---------- Le geste d'empreinte : ajouter un souvenir ---------- */
+
+.ajouter {
+  position: fixed;
+  right: 20px;
+  bottom: 24px;
+  background: none;
+  border: 1px solid rgba(224, 168, 120, .35);
+  color: var(--chaud);
+  font: inherit;
+  font-size: 13px;
+  letter-spacing: .12em;
+  padding: 12px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  touch-action: manipulation;
+  transition: background 600ms var(--souffle), color 600ms var(--souffle);
+}
+.ajouter:hover, .ajouter:focus-visible { background: rgba(224, 168, 120, .12); }
+
+/* Le tiroir : une question à la fois, jamais un formulaire */
+.tiroir {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 10, 9, .82);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 20;
+}
+.tiroir[hidden] { display: none; }
+
+.tiroir-boite {
+  width: min(520px, 100%);
+  background: var(--fond-doux);
+  border-radius: 14px 14px 0 0;
+  border-top: 1px solid rgba(237, 228, 216, .1);
+  padding: 28px 24px 34px;
+  animation: surgir 620ms var(--souffle) both;
+}
+@keyframes surgir {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+.tiroir-titre { font-size: 20px; margin: 0 0 22px; }
+
+.types { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }
+
+.type {
+  flex: 1 1 auto;
+  background: none;
+  border: 1px solid rgba(237, 228, 216, .16);
+  color: var(--encre-pale);
+  font: inherit;
+  font-size: 15px;
+  padding: 14px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: color 600ms var(--souffle), border-color 600ms var(--souffle);
+}
+.type.choisi { color: var(--encre); border-color: var(--chaud); }
+
+.champ { margin-bottom: 20px; }
+.champ[hidden] { display: none; }
+.champ input[type="file"], .champ textarea {
+  width: 100%;
+  color: var(--encre-pale);
+  font: inherit;
+  font-size: 14px;
+}
+.champ textarea {
+  background: var(--fond);
+  border: 1px solid rgba(237, 228, 216, .14);
+  border-radius: 6px;
+  padding: 14px;
+  color: var(--encre);
+  resize: vertical;
+}
+.aide { color: var(--encre-pale); font-size: 13px; margin: 10px 0 16px; }
+
+.case {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--encre-pale);
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+#date-souvenir {
+  background: var(--fond);
+  border: 1px solid rgba(237, 228, 216, .14);
+  border-radius: 6px;
+  color: var(--encre);
+  font: inherit;
+  padding: 10px;
+  margin-bottom: 18px;
+}
+
+.actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
+.garder {
+  background: var(--chaud);
+  border: 0;
+  color: #241a12;
+  font: inherit;
+  font-size: 15px;
+  padding: 13px 26px;
+  border-radius: 999px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.garder:disabled { opacity: .4; cursor: default; }
+
+.note { color: var(--encre-pale); font-size: 13px; margin: 16px 0 0; min-height: 18px; }
+
+/* La photo déposée, quand elle a une source */
+.photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Quand il n'y a encore rien dans la boîte */
+.vide {
+  color: var(--encre-pale);
+  font-size: 15px;
+  line-height: 1.7;
+  text-align: center;
+  max-width: 300px;
+  margin: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition-duration: 1ms !important; }
 }
