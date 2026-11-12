@@ -292,6 +292,14 @@ function carteVocal(s) {
   let enCours = false;
   let verrouille = false;
 
+  // La durée du fichier prime sur la durée inventée.
+  let dureeReelle = duree;
+  if (son) {
+    son.addEventListener('loadedmetadata', () => {
+      if (isFinite(son.duration)) dureeReelle = son.duration * 1000;
+    });
+  }
+
   function tic() {
     const ecoule = position + (performance.now() - debut);
     onde.style.transform = 'scaleX(' + Math.min(1, ecoule / dureeReelle) + ')';
@@ -304,7 +312,7 @@ function carteVocal(s) {
     debut = performance.now();
     tic();
     if (son) {
-      son.currentTime = Math.min(position, (son.duration || duree / 1000));
+      son.currentTime = Math.min(position / 1000, son.duration || 0);
       son.play().catch(() => {});
     }
   }
@@ -320,14 +328,6 @@ function carteVocal(s) {
       position = 0;
       onde.style.transform = 'scaleX(0)';
     }
-  }
-
-  // La durée du fichier prime sur la durée inventée.
-  let dureeReelle = duree;
-  if (son) {
-    son.addEventListener('loadedmetadata', () => {
-      if (isFinite(son.duration)) dureeReelle = son.duration * 1000;
-    });
   }
 
   // On écoute sur la fenêtre, pas seulement sur la capsule : un doigt qui
@@ -459,7 +459,7 @@ document.querySelectorAll('.type').forEach((bouton) => {
     document.querySelectorAll('.type').forEach((t) => t.classList.remove('choisi'));
     bouton.classList.add('choisi');
     document.querySelectorAll('.champ').forEach((c) => { c.hidden = true; });
-    const champ = $('#champ-' + (typeChoisi === 'vocal' ? 'vocal' : typeChoisi));
+    const champ = $('#champ-' + typeChoisi);
     if (champ) champ.hidden = false;
   });
 });
@@ -506,7 +506,6 @@ $('#garder').addEventListener('click', async () => {
 
     tiroir.hidden = true;
     reinitialiserTiroir();
-    if (boiteCourante) { $('#nom-boite').textContent = boiteCourante.nom; }
     dessinerSouvenirs(donnees.boites[0]);
     montrerRecu();
 
