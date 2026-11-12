@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1a1614">
+  <title>Liberati</title>
+  <meta name="description" content="Une boîte privée de souvenirs, qu'on ouvre quand quelqu'un nous manque.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Écran 1 — le seuil : on arrive, rien à choisir -->
+  <section id="seuil" class="ecran actif">
+    <p class="ligne">Tu es là.</p>
+    <p class="souffle">Reste un moment.</p>
+    <button id="entrer" class="discret">entrer</button>
+  </section>
+
+  <!-- Écran 2 — les boîtes posées sur la table -->
+  <section id="table" class="ecran">
+    <div class="boites" id="boites"></div>
+  </section>
+
+  <!-- Écran 3 — la boîte ouverte, ses souvenirs -->
+  <section id="boite" class="ecran">
+    <button id="retour" class="discret haut-gauche" aria-label="reveniren">←</button>
+    <div class="entete">
+      <h1 id="nom-boite"></h1>
+    </div>
+    <div class="souvenirs" id="souvenirs"></div>
+  </section>
+
+  <!-- Le reçu, pas un écran : deux secondes et il disparaît -->
+  <div id="recu" class="recu" aria-live="polite">
+    <span class="recu-marque"></span>
+    <span class="recu-mot">C'est gardé.</span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
