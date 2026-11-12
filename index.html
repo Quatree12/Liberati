@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#1a1614">
   <title>Liberati</title>
   <meta name="description" content="Une boîte privée de souvenirs, qu'on ouvre quand quelqu'un nous manque.">
-    <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 
@@ -29,10 +29,42 @@
       <h1 id="nom-boite"></h1>
     </div>
     <div class="souvenirs" id="souvenirs"></div>
+    <p class="aide geste-aide">appui long sur un souvenir pour le retirer</p>
 
     <!-- Le geste d'empreinte : faire entrer un souvenir dans la boîte.
          Les fichiers restent dans cet appareil, ils ne partent nulle part. -->
     <button id="ajouter" class="ajouter" aria-label="Ajouter un souvenir">empreinte</button>
+  </section>
+
+  <!-- La roue : les réglages, discrets, en haut à droite -->
+  <button id="reglages" class="roue" aria-label="Réglages">⚙</button>
+
+  <!-- La page des réglages : exporter, importer, et rien de bavard -->
+  <section id="reglages-ecran" class="ecran">
+    <button id="retour-reglages" class="discret haut-gauche" aria-label="revenir">←</button>
+    <div class="entete">
+      <h1>Réglages</h1>
+    </div>
+
+    <div class="reglages-corps">
+      <p class="aide">Tes souvenirs vivent dans cet appareil et nulle part ailleurs.
+        Exporte-les de temps en temps : c'est ce qui te protège si le navigateur
+        efface son stockage.</p>
+
+      <button id="exporter" class="garder large">exporter un fichier</button>
+      <p class="aide" id="etat-export"></p>
+
+      <label class="faux-bouton large" for="fichier-import">
+        importer un fichier
+        <input type="file" id="fichier-import" accept=".json,application/json" hidden>
+      </label>
+      <p class="aide" id="etat-import"></p>
+
+      <p class="aide doux">
+        Le fichier n'est pas chiffré : il contient tes souvenirs en clair.
+        Garde-le là où toi seul peux le lire.
+      </p>
+    </div>
   </section>
 
   <!-- La fenêtre d'ajout : elle ne demande rien de plus que le nécessaire -->
@@ -47,13 +79,15 @@
       </div>
 
       <div class="champ" id="champ-photo" hidden>
-        <input type="file" id="fichier-photo" accept="image/*">
+        <label class="faux-bouton" for="fichier-photo">choisir la photo</label>
+        <input type="file" id="fichier-photo" accept="image/*" hidden>
       </div>
 
       <div class="champ" id="champ-vocal" hidden>
-        <input type="file" id="fichier-vocal" accept="audio/*">
-        <p class="aide">Un fichier audio, ou une vidéo dont on ne garde que le son.</p>
-        <input type="file" id="fichier-video" accept="video/*">
+        <label class="faux-bouton" for="fichier-vocal">choisir la voix</label>
+        <input type="file" id="fichier-vocal" accept="audio/*" hidden>
+        <label class="faux-bouton" for="fichier-video">ou prendre le son d'une vidéo</label>
+        <input type="file" id="fichier-video" accept="video/*" hidden>
         <p class="aide">Vidéo : seul l'audio sera conservé.</p>
       </div>
 
@@ -82,7 +116,7 @@
     <span class="recu-mot">C'est gardé.</span>
   </div>
 
-    <script src="app.js?v=6"></script>
+  <script src="app.js?v=8"></script>
   <script>
     // Le gardien du seuil : l'app se garde dans l'appareil et s'ouvre
     // même sans réseau. Les souvenirs, eux, ne passent pas par là.
@@ -93,3 +127,4 @@
     }
   </script>
 </body>
+</html>
