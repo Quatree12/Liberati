@@ -1,1 +1,76 @@
+# ── La règle la plus importante de ce dépôt ──────────────────────────
+# Le code est public. Les souvenirs ne le sont JAMAIS.
+#
+# Aucun fichier réel ne doit entrer ici : ni photo de famille, ni vocal,
+# ni texte personnel. Un fichier poussé une fois reste dans l'historique
+# Git, même après suppression. Ce n'est pas réparable — c'est irréversible.
+#
+# Ce bloc refuse tout média, sauf le dossier de démonstration ci-dessous.
+# ────────────────────────────────────────────────────────────────────
+
+# Tout média, partout…
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.heic
+*.heif
+*.tif
+*.tiff
+*.bmp
+*.svg
+*.mp3
+*.m4a
+*.aac
+*.wav
+*.ogg
+*.opus
+*.flac
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+
+# …sauf ce qui est explicitement de la démonstration.
+!demo/**/*.jpg
+!demo/**/*.png
+!demo/**/*.mp3
+
+# Exports de l'application (jamais versionnés)
+*.zip
+*.liberati
+
+# Documents personnels
+*.docx
+*.pdf
+*.txt
+!README.txt
+!LICENSE.txt
+
+# Système et éditeurs
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
+
+# Dépendances et builds
+node_modules/
+dist/
+build/
+.cache/
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Secrets — à ne jamais commiter, même chiffrés
+.env
+.env.*
+*.key
+*.pem
+secrets/
 
