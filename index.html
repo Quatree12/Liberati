@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#1a1614">
   <title>Liberati</title>
   <meta name="description" content="Une boîte privée de souvenirs, qu'on ouvre quand quelqu'un nous manque.">
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
@@ -24,12 +24,57 @@
 
   <!-- Écran 3 — la boîte ouverte, ses souvenirs -->
   <section id="boite" class="ecran">
-    <button id="retour" class="discret haut-gauche" aria-label="reveniren">←</button>
+    <button id="retour" class="discret haut-gauche" aria-label="revenir">←</button>
     <div class="entete">
       <h1 id="nom-boite"></h1>
     </div>
     <div class="souvenirs" id="souvenirs"></div>
+
+    <!-- Le geste d'empreinte : faire entrer un souvenir dans la boîte.
+         Les fichiers restent dans cet appareil, ils ne partent nulle part. -->
+    <button id="ajouter" class="ajouter" aria-label="Ajouter un souvenir">empreinte</button>
   </section>
+
+  <!-- La fenêtre d'ajout : elle ne demande rien de plus que le nécessaire -->
+  <div id="tiroir" class="tiroir" hidden>
+    <div class="tiroir-boite">
+      <p class="tiroir-titre">Qu'est-ce que tu gardes ?</p>
+
+      <div class="types">
+        <button class="type" data-type="photo">une photo</button>
+        <button class="type" data-type="vocal">une voix</button>
+        <button class="type" data-type="phrase">des mots</button>
+      </div>
+
+      <div class="champ" id="champ-photo" hidden>
+        <input type="file" id="fichier-photo" accept="image/*">
+      </div>
+
+      <div class="champ" id="champ-vocal" hidden>
+        <input type="file" id="fichier-vocal" accept="audio/*">
+        <p class="aide">Un fichier audio, ou une vidéo dont on ne garde que le son.</p>
+        <input type="file" id="fichier-video" accept="video/*">
+        <p class="aide">Vidéo : seul l'audio sera conservé.</p>
+      </div>
+
+      <div class="champ" id="champ-phrase" hidden>
+        <textarea id="texte-phrase" rows="4" placeholder="Ce que tu veux garder, mot pour mot."></textarea>
+      </div>
+
+      <label class="case">
+        <input type="checkbox" id="dater">
+        <span>Donner une date à ce souvenir</span>
+      </label>
+      <input type="date" id="date-souvenir" hidden>
+
+      <div class="actions">
+        <button id="annuler" class="discret">pas maintenant</button>
+        <button id="garder" class="garder">garder</button>
+      </div>
+
+      <p class="note" id="note"></p>
+    </div>
+  </div>
 
   <!-- Le reçu, pas un écran : deux secondes et il disparaît -->
   <div id="recu" class="recu" aria-live="polite">
@@ -37,6 +82,6 @@
     <span class="recu-mot">C'est gardé.</span>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
