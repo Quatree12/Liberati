@@ -98,6 +98,7 @@ html, body {
   box-shadow: 0 16px 34px rgba(0, 0, 0, .45);
 }
 .boite-nom, .boite-matiere { color: inherit; }
+.boite-nom, .boite-matiere { color: inherit; }
 .boite-nom { font-size: 19px; }
 .boite-matiere { color: var(--encre-pale); font-size: 13px; margin-top: 6px; }
 
