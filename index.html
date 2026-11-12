@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#1a1614">
   <title>Liberati</title>
   <meta name="description" content="Une boîte privée de souvenirs, qu'on ouvre quand quelqu'un nous manque.">
-  <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
@@ -82,6 +82,14 @@
     <span class="recu-mot">C'est gardé.</span>
   </div>
 
-  <script src="app.js?v=4"></script>
+    <script src="app.js?v=6"></script>
+  <script>
+    // Le gardien du seuil : l'app se garde dans l'appareil et s'ouvre
+    // même sans réseau. Les souvenirs, eux, ne passent pas par là.
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').catch(() => {});
+      });
+    }
+  </script>
 </body>
-</html>
